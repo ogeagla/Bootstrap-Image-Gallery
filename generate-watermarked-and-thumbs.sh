@@ -1,10 +1,11 @@
 #!/bin/env bash
 
-RAW_FOLDER=.
-WATERMARKED_FOLDER=.
-THUMBS_FOLDER=.
+RAW_FOLDER=./img/raw/all
+WATERMARKS_FOLDER=./img/watermarks
+WATERMARKED_FOLDER=./img/watermarked
+THUMBS_FOLDER=./img/thumbnail
 
-for file in $RAW_FOLDER/test1.jpg
+for file in $RAW_FOLDER/*
 do
     echo "generating watermark for $file"
     # next line checks the mime-type of the file
@@ -20,7 +21,7 @@ do
         extension="${filename##*.}"
         filename="${filename%.*}"
         
-        WATERMARK_IMG="$filename-watermark.png"
+        WATERMARK_IMG="${WATERMARKS_FOLDER}/${filename}-watermark.png"
 
          #create trans img w watermark with custom size
         S_W=4
@@ -38,7 +39,7 @@ do
     fi 
 done
 
-for file in $WATERMARKED_FOLDER/test1_marked.jpg
+for file in $WATERMARKED_FOLDER/*
 do
     echo "generating thumb for $file"
     # next line checks the mime-type of the file
@@ -61,6 +62,11 @@ do
         #generate thumbnail:
         convert -sample 200x150 "$file" "${THUMBS_FOLDER}/${filename}_thumb.${extension}"  
         
+        echo "{
+          \"url_wt\":\"${THUMBS_FOLDER}/${filename}_thumb.${extension}\",
+          \"url_w\":\"${WATERMARKED_FOLDER}/${filename}.${extension}\",
+          \"title\":\"title\"
+}," >> images.json
         
         #fi
     fi     
