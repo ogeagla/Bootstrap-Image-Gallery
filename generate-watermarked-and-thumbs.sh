@@ -1,5 +1,9 @@
 #!/bin/env bash
 
+#use something like this to order them by date taken:
+#http://www.linuxjournal.com/content/tech-tip-automaticaly-organize-your-photos-date
+
+
 # Redirect stdout ( > ) into a named pipe ( >() ) running "tee"
 exec > >(tee logfile.txt)
 
@@ -15,12 +19,12 @@ WATERMARKS_FOLDER=./img/watermarks
 WATERMARKED_FOLDER=./img/watermarked
 THUMBS_FOLDER=./img/thumbnail
 
+
+#remove spaces from file names
 if [ ! -d "$WORKING" ]; then
     mkdir "$WORKING"
     cp -r $RAW_FOLDER/* $WORKING 
     
-    #rename " " "_" "${WORKING}/*"
-    #cd path/to/dir
     for file in $WORKING/*; do
         mv --backup=numbered -- "$file" "${file// /_}"
     done
@@ -47,21 +51,25 @@ do
             echo "  image type: $IMAGE_TYPE"
             echo "  size: $IMAGE_SIZE, width: $WIDTH, height: $HEIGHT"
             #create trans img w watermark with custom size
+            
+            #first way is to use image scale, but bash does integer rounding
             #S_W=4
             #S_H=20
             #W=$((WIDTH - $((WIDTH/S_W))))
             #H=$((HEIGHT - $((HEIGHT/S_H))))
-            D_W=120
+
+            #more simple to just move down from top left corner, the safe, but ugly, approach
+            D_W=180
             D_H=30
             W=$((WIDTH - D_W))
             H=$((HEIGHT - D_H))
             echo "  mark location: $W, $H"
-            convert -size "$WIDTH"x"$HEIGHT" xc:transparent -font Carlito-bold -pointsize 32 -fill DeepSkyBlue -draw "text $W,$H 'octavian g'" "$WATERMARK_IMG"
+            convert -size "$WIDTH"x"$HEIGHT" xc:transparent -font Overpass-bold -pointsize 28 -fill PapayaWhip -draw "text $W,$H 'octavian g'" "$WATERMARK_IMG"
             
             echo "  watermark: $WATERMARK_IMG"
             
             
-            composite -dissolve 60% -quality 100 "$WATERMARK_IMG" "$file" "${WATERMARKED_FOLDER}/${filename}_marked.${extension}"  
+            composite -dissolve 70% -quality 100 "$WATERMARK_IMG" "$file" "${WATERMARKED_FOLDER}/${filename}_marked.${extension}"  
             echo "  watermarked image output: ${WATERMARKED_FOLDER}/${filename}_marked.${extension}"
         else
             echo "  file $WATERMARK_IMG already exists, skipping"
