@@ -2,7 +2,8 @@
 
 #use something like this to order them by date taken:
 #http://www.linuxjournal.com/content/tech-tip-automaticaly-organize-your-photos-date
-
+#or this
+#https://unix.stackexchange.com/questions/6998/how-can-i-rename-photos-given-the-exif-data
 
 # Redirect stdout ( > ) into a named pipe ( >() ) running "tee"
 exec > >(tee logfile.txt)
@@ -13,18 +14,31 @@ exec > >(tee logfile.txt)
 # I did not want to steal from him by simply adding his answer to mine.
 exec 2>&1
 
+
+TEMP=./img/temp
 WORKING=./img/working
 RAW_FOLDER=./img/raw/all
 WATERMARKS_FOLDER=./img/watermarks
 WATERMARKED_FOLDER=./img/watermarked
 THUMBS_FOLDER=./img/thumbnail
 
-
-#remove spaces from file names
 if [ ! -d "$WORKING" ]; then
     mkdir "$WORKING"
-    cp -r $RAW_FOLDER/* $WORKING 
+fi
+
+#remove spaces from file names
+if [ ! -d "$TEMP" ]; then
+    mkdir "$TEMP"
+    cp -r $RAW_FOLDER/* $TEMP 
     
+    for i in $TEMP/*; do
+        filename=$(basename "$i")
+        extension="${filename##*.}"
+        filename="${filename%.*}"
+        j=`jhead "$i" | grep date | sed 's/^File date[^:]\+: \(.\+\)$/\1/'`-"${filename}".jpg
+        mv -i "$i" "${WORKING}/${j}"
+    done
+
     for file in $WORKING/*; do
         mv --backup=numbered -- "$file" "${file// /_}"
     done
@@ -64,12 +78,12 @@ do
             W=$((WIDTH - D_W))
             H=$((HEIGHT - D_H))
             echo "  mark location: $W, $H"
-            convert -size "$WIDTH"x"$HEIGHT" xc:transparent -font Overpass-bold -pointsize 28 -fill PapayaWhip -draw "text $W,$H 'octavian g'" "$WATERMARK_IMG"
+            convert -size "$WIDTH"x"$HEIGHT" xc:transparent -font Overpass-bold -pointsize 26 -fill PapayaWhip -draw "text $W,$H 'octavian g'" "$WATERMARK_IMG"
             
             echo "  watermark: $WATERMARK_IMG"
             
             
-            composite -dissolve 70% -quality 100 "$WATERMARK_IMG" "$file" "${WATERMARKED_FOLDER}/${filename}_marked.${extension}"  
+            composite -dissolve 60% -quality 100 "$WATERMARK_IMG" "$file" "${WATERMARKED_FOLDER}/${filename}_marked.${extension}"  
             echo "  watermarked image output: ${WATERMARKED_FOLDER}/${filename}_marked.${extension}"
         else
             echo "  file $WATERMARK_IMG already exists, skipping"
