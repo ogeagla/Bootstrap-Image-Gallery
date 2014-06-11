@@ -1,2 +1,5 @@
 .DS_Store
 node_modules
+img/raw
+img/working
+img/temp

@@ -36,7 +36,9 @@ if [ ! -d "$TEMP" ]; then
         extension="${filename##*.}"
         filename="${filename%.*}"
         j=`jhead "$i" | grep date | sed 's/^File date[^:]\+: \(.\+\)$/\1/'`-"${filename}".jpg
-        mv -i "$i" "${WORKING}/${j}"
+        id=`identify -verbose "$i" | grep DateTimeOri | awk '{print $2$3 }' | sed s%:%-%g`-"${filename}".jpg
+        echo "woulda been $j or $id"
+        mv -i "$i" "${WORKING}/${id}"
     done
 
     for file in $WORKING/*; do
