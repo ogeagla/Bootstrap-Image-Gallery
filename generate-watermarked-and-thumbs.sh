@@ -14,7 +14,6 @@ exec > >(tee logfile.txt)
 # I did not want to steal from him by simply adding his answer to mine.
 exec 2>&1
 
-
 TEMP=./img/temp
 WORKING=./img/working
 RAW_FOLDER=./img/raw/all
@@ -35,15 +34,39 @@ if [ ! -d "$TEMP" ]; then
         filename=$(basename "$i")
         extension="${filename##*.}"
         filename="${filename%.*}"
-        j=`jhead "$i" | grep date | sed 's/^File date[^:]\+: \(.\+\)$/\1/'`-"${filename}".jpg
-        id=`identify -verbose "$i" | grep DateTimeOri | awk '{print $2$3 }' | sed s%:%-%g`-"${filename}".jpg
-        echo "woulda been $j or $id"
-        mv -i "$i" "${WORKING}/${id}"
+        id=`identify -verbose "$i" | grep DateTimeOri | awk '{print $2$3 }' | sed s%:%-%g`
+        if [ -z "$id" ];  then
+            id="0000"
+        fi
+        newname="${id}-${filename}.jpg"
+        echo "old name: $newname"
+        mv -i "$i" "${WORKING}/${newname}"
+        
     done
-
     for file in $WORKING/*; do
-        mv --backup=numbered -- "$file" "${file// /_}"
+        filename=$(basename "$file")
+        extension="${filename##*.}"
+        filename="${filename%.*}"
+        newname=`echo $filename | tr ". " -` 
+        mv --backup=numbered -- "$file" "$WORKING/${newname}.${extension}"
     done
+    count=1
+    for i in `ls -rv $WORKING/*.*`; do 
+        filename=$(basename "$i")
+        extension="${filename##*.}"
+        filename="${filename%.*}"
+        padtowidth=4
+        namenumber=`printf "%0*d\n" $padtowidth $count`
+        echo "namenumber: $namenumber"
+        echo "old file: $i"
+        newname="${namenumber}-${filename}"
+        #newname=`echo $newname | tr ". " -` 
+        echo "new name: $newname"
+        mv "$i" "${WORKING}/${newname}.${extension}" 
+        count=$((count+1))
+    done
+    
+   
 fi
 
 for file in $WORKING/*
@@ -52,7 +75,7 @@ do
     # next line checks the mime-type of the file
     IMAGE_TYPE=`file --mime-type -b "$file" | awk -F'/' '{print $1}'`
     
-    if [ x$IMAGE_TYPE = "ximage" ]; then
+    if [ x"$IMAGE_TYPE" = "ximage" ]; then
         IMAGE_SIZE=`identify -format "%wx%h" $file`
         #`file -b $file | sed 's/ //g' | sed 's/,/ /g' | awk  '{print $2}'`
         WIDTH=`echo $IMAGE_SIZE | sed 's/x/ /g' | awk '{print $1}'`
@@ -101,7 +124,7 @@ do
     # next line checks the mime-type of the file
     IMAGE_TYPE=`file --mime-type -b "$file" | awk -F'/' '{print $1}'`
     
-    if [ x$IMAGE_TYPE = "ximage" ]; then
+    if [ x"$IMAGE_TYPE" = "ximage" ]; then
         IMAGE_SIZE=`identify -format "%wx%h" $file`
         #`file -b $file | sed 's/ //g' | sed 's/,/ /g' | awk  '{print $2}'`
         WIDTH=`echo $IMAGE_SIZE | sed 's/x/ /g' | awk '{print $1}'`
