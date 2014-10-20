@@ -9,13 +9,21 @@ def get_image_files_from_dir(dir):
     return files
 
 def get_cv_image(image_file):
-    cv_image = cv2.imread(image_file,0)#cv2.IMREAD_COLOR)
+    cv_image = cv2.imread(image_file,cv2.IMREAD_COLOR)
     return cv_image
 
 def get_cv_edges_image(cv_image):
-    cv_edges_image = cv2.Canny(cv_image,100,200)
+    cv_edges_image = cv2.Canny(cv_image,200,300)
     return cv_edges_image
+
+def get_cv_thresholded_image(cv_image):
+    cv_thresholded_image = cv2.adaptiveThreshold(cv_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,71,2)
+    return cv_thresholded_image
     
+def get_cv_grayscale_image(cv_image):
+    cv_grayscale_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+    return cv_grayscale_image
+
 def show_side_by_side(original_images, altered_images):
     assert len(original_images) is len(altered_images)
     number_of_subplots = len(original_images)
@@ -72,14 +80,20 @@ def main():
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
     print 'found ', len(image_files), ' image files on FS'
 
-    cv_images = [get_cv_image(image_file) for image_file in image_files[:15]]
+    cv_images = [get_cv_image(image_file) for image_file in image_files[:5]]
     loaded_cv_images_count = len(cv_images)
     print 'loaded ', loaded_cv_images_count, ' images into CV'
     
-    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_images]
+    cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_images]
+    print 'generated ', len(cv_grayscale_images), ' CV grayscale images'
+
+    cv_thresholded_images = [get_cv_thresholded_image(cv_image) for cv_image in cv_grayscale_images]
+    print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+
+    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_thresholded_images]
     print 'generated ', len(cv_edges_images), ' CV edges images'
-    
-    show_side_by_side(cv_images, cv_edges_images)
+
+    show_side_by_side(cv_thresholded_images, cv_edges_images)
 
 if __name__ == "__main__":
     main()
