@@ -95,9 +95,34 @@ def run_all_pics(number_pics=5):
 
     show_side_by_side(cv_thresholded_images, cv_edges_images)
 
+def run_one_pic():
+    image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
+    print 'found ', len(image_files), ' image files on FS'
+
+    image_files = [image_files[2], image_files[2], image_files[2]]
+
+    cv_images = [get_cv_image(image_file) for image_file in image_files]
+    loaded_cv_images_count = len(cv_images)
+    print 'loaded ', loaded_cv_images_count, ' images into CV'
+    
+    cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_images]
+    print 'generated ', len(cv_grayscale_images), ' CV grayscale images'
+
+    cv_thresholded_images = [get_cv_thresholded_image(cv_grayscale_images[0], 5, 2), get_cv_thresholded_image(cv_grayscale_images[0], 7, 2), get_cv_thresholded_image(cv_grayscale_images[0], 15, 2)]
+    #cv_thresholded_images = [get_cv_thresholded_image(cv_image) for cv_image in cv_grayscale_images]
+    print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+
+    cv_edges_images = [get_cv_edges_image(cv_thresholded_images[0], 100, 1200), get_cv_edges_image(cv_thresholded_images[1], 100, 1200), get_cv_edges_image(cv_thresholded_images[2], 100, 1200)]
+#    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_thresholded_images]
+    print 'generated ', len(cv_edges_images), ' CV edges images'
+
+    show_side_by_side(cv_thresholded_images, cv_edges_images)
+
+
 def main():
 
-    run_all_pics()
+    #run_all_pics()
+    run_one_pic()
 
 if __name__ == "__main__":
     main()
