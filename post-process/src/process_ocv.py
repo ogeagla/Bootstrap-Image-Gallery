@@ -12,12 +12,12 @@ def get_cv_image(image_file):
     cv_image = cv2.imread(image_file,cv2.IMREAD_COLOR)
     return cv_image
 
-def get_cv_edges_image(cv_image):
-    cv_edges_image = cv2.Canny(cv_image,200,300)
+def get_cv_edges_image(cv_image, lower_thresh=100, upper_thresh=200):
+    cv_edges_image = cv2.Canny(cv_image,lower_thresh,upper_thresh)
     return cv_edges_image
 
-def get_cv_thresholded_image(cv_image):
-    cv_thresholded_image = cv2.adaptiveThreshold(cv_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,71,2)
+def get_cv_thresholded_image(cv_image, block_size=11, subtraction_constant=2):
+    cv_thresholded_image = cv2.adaptiveThreshold(cv_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,block_size,subtraction_constant)
     return cv_thresholded_image
     
 def get_cv_grayscale_image(cv_image):
@@ -75,12 +75,12 @@ def show_side_by_side(original_images, altered_images):
         plt.draw()
     plt.show()
 
-def main():
+def run_all_pics(number_pics=5):
 
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
     print 'found ', len(image_files), ' image files on FS'
 
-    cv_images = [get_cv_image(image_file) for image_file in image_files[:5]]
+    cv_images = [get_cv_image(image_file) for image_file in image_files[:number_pics]]
     loaded_cv_images_count = len(cv_images)
     print 'loaded ', loaded_cv_images_count, ' images into CV'
     
@@ -94,6 +94,10 @@ def main():
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
     show_side_by_side(cv_thresholded_images, cv_edges_images)
+
+def main():
+
+    run_all_pics()
 
 if __name__ == "__main__":
     main()
