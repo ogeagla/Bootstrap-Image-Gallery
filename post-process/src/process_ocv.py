@@ -12,7 +12,7 @@ def get_cv_image(image_file):
     cv_image = cv2.imread(image_file,cv2.IMREAD_COLOR)
     return cv_image
 
-def get_cv_edges_image(cv_image, lower_thresh=100, upper_thresh=200):
+def get_cv_edges_image(cv_image, lower_thresh=10, upper_thresh=60):
     cv_edges_image = cv2.Canny(cv_image,lower_thresh,upper_thresh)
     return cv_edges_image
 
@@ -23,6 +23,14 @@ def get_cv_thresholded_image(cv_image, block_size=11, subtraction_constant=2):
 def get_cv_grayscale_image(cv_image):
     cv_grayscale_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     return cv_grayscale_image
+
+def get_cv_bilateral_filtered_image(cv_image, nhood_size=9, sigma_color=80, sigma_space=80):
+    cv_filtered_image = cv2.bilateralFilter(cv_image,nhood_size,sigma_color,sigma_space)
+    return cv_filtered_image
+
+def get_cv_scaled_image(cv_image, scalar):
+    cv_scaled_image = cv2.resize(cv_image, (0,0), fx=scalar, fy=scalar, interpolation=cv2.INTER_LANCZOS4)
+    return cv_scaled_image
 
 def show_side_by_side(original_images, altered_images):
     assert len(original_images) is len(altered_images)
@@ -84,22 +92,28 @@ def run_all_pics(number_pics=5):
     loaded_cv_images_count = len(cv_images)
     print 'loaded ', loaded_cv_images_count, ' images into CV'
     
-    cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_images]
+    cv_scaled_images = [get_cv_scaled_image(cv_image, 0.2) for cv_image in cv_images]
+    print 'generated ', len(cv_scaled_images), ' CV scaled images'
+
+    cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_scaled_images]
     print 'generated ', len(cv_grayscale_images), ' CV grayscale images'
 
-    cv_thresholded_images = [get_cv_thresholded_image(cv_image) for cv_image in cv_grayscale_images]
-    print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+    cv_bilateral_filtered_images = [get_cv_bilateral_filtered_image(cv_image) for cv_image in cv_grayscale_images]    
+    print 'generated ', len(cv_bilateral_filtered_images), ' CV bilaterally filtered images'
 
-    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_thresholded_images]
+    #cv_thresholded_images = [get_cv_thresholded_image(cv_image, 5,2) for cv_image in cv_grayscale_images]
+    #print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+
+    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_bilateral_filtered_images]
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
-    show_side_by_side(cv_thresholded_images, cv_edges_images)
+    show_side_by_side(cv_grayscale_images, cv_edges_images)
 
-def run_one_pic():
+def run_one_pic(index=3):
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
     print 'found ', len(image_files), ' image files on FS'
 
-    image_files = [image_files[2], image_files[2], image_files[2]]
+    image_files = [image_files[index], image_files[index], image_files[index]]
 
     cv_images = [get_cv_image(image_file) for image_file in image_files]
     loaded_cv_images_count = len(cv_images)
@@ -108,21 +122,26 @@ def run_one_pic():
     cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_images]
     print 'generated ', len(cv_grayscale_images), ' CV grayscale images'
 
-    cv_thresholded_images = [get_cv_thresholded_image(cv_grayscale_images[0], 5, 2), get_cv_thresholded_image(cv_grayscale_images[0], 7, 2), get_cv_thresholded_image(cv_grayscale_images[0], 15, 2)]
-    #cv_thresholded_images = [get_cv_thresholded_image(cv_image) for cv_image in cv_grayscale_images]
-    print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+    #cv_bilateral_filtered_images = [get_cv_bilateral_filtered_image(cv_image) for cv_image in cv_grayscale_images]
 
-    cv_edges_images = [get_cv_edges_image(cv_thresholded_images[0], 100, 1200), get_cv_edges_image(cv_thresholded_images[1], 100, 1200), get_cv_edges_image(cv_thresholded_images[2], 100, 1200)]
-#    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_thresholded_images]
+    cv_bilateral_filtered_images = [get_cv_bilateral_filtered_image(cv_grayscale_images[0], 9,80,80),get_cv_bilateral_filtered_image(cv_grayscale_images[0],9,80,80),get_cv_bilateral_filtered_image(cv_grayscale_images[0],9,80,80)]
+    print 'generated ', len(cv_bilateral_filtered_images), ' CV bilaterally filtered images'
+
+    #cv_thresholded_images = [get_cv_thresholded_image(cv_grayscale_images[0], 5, 2), get_cv_thresholded_image(cv_grayscale_images[0], 7, 2), get_cv_thresholded_image(cv_grayscale_images[0], 15, 2)]
+    #cv_thresholded_images = [get_cv_thresholded_image(cv_image) for cv_image in cv_grayscale_images]
+    #print 'generated ', len(cv_thresholded_images), ' CV thresholded images'
+
+    cv_edges_images = [get_cv_edges_image(cv_bilateral_filtered_images[0], 10, 60), get_cv_edges_image(cv_bilateral_filtered_images[1], 10, 60), get_cv_edges_image(cv_bilateral_filtered_images[2], 10, 60)]
+#    cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_bilateral_filtered_images]
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
-    show_side_by_side(cv_thresholded_images, cv_edges_images)
+    show_side_by_side(cv_bilateral_filtered_images, cv_edges_images)
 
 
 def main():
 
-    #run_all_pics()
-    run_one_pic()
+    run_all_pics(20)
 
+    
 if __name__ == "__main__":
     main()
