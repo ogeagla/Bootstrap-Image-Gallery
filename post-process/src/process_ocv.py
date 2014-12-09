@@ -32,8 +32,14 @@ def get_cv_scaled_image(cv_image, scalar):
     cv_scaled_image = cv2.resize(cv_image, (0,0), fx=scalar, fy=scalar, interpolation=cv2.INTER_LANCZOS4)
     return cv_scaled_image
 
+def get_cv_scaled_image(cv_image, size_x, size_y):
+    rows,cols,channels = cv_image.shape
+    cv_scaled_image = cv2.resize(cv_image, (0,0), fx=float(size_x)/float(cols), fy=float(size_y)/float(rows), interpolation=cv2.INTER_LANCZOS4)
+    return cv_scaled_image
+
+
 def show_side_by_side(original_images, altered_images):
-    assert len(original_images) is len(altered_images)
+    assert len(original_images) == len(altered_images)
     number_of_subplots = len(original_images)
 
     max_per_plot = 5
@@ -92,7 +98,7 @@ def run_all_pics(number_pics=5):
     loaded_cv_images_count = len(cv_images)
     print 'loaded ', loaded_cv_images_count, ' images into CV'
     
-    cv_scaled_images = [get_cv_scaled_image(cv_image, 0.2) for cv_image in cv_images]
+    cv_scaled_images = [get_cv_scaled_image(cv_image, 200, 100) for cv_image in cv_images]
     print 'generated ', len(cv_scaled_images), ' CV scaled images'
 
     cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_scaled_images]
@@ -108,6 +114,8 @@ def run_all_pics(number_pics=5):
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
     show_side_by_side(cv_grayscale_images, cv_edges_images)
+
+    return cv_edges_images
 
 def run_one_pic(index=3):
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
