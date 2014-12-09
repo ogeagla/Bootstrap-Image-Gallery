@@ -37,12 +37,15 @@ def get_cv_scaled_image(cv_image, size_x, size_y):
     cv_scaled_image = cv2.resize(cv_image, (0,0), fx=float(size_x)/float(cols), fy=float(size_y)/float(rows), interpolation=cv2.INTER_LANCZOS4)
     return cv_scaled_image
 
+def get_sum_of_images(img1, img2):
+    sum_img = cv2.add(img1, img2)
+    return sum_img
 
 def show_side_by_side(original_images, altered_images):
     assert len(original_images) == len(altered_images)
     number_of_subplots = len(original_images)
 
-    max_per_plot = 5
+    max_per_plot = 10
     original_images_split = []
     altered_images_split = []
     if number_of_subplots > max_per_plot:
@@ -113,7 +116,14 @@ def run_all_pics(number_pics=5):
     cv_edges_images = [get_cv_edges_image(cv_image) for cv_image in cv_bilateral_filtered_images]
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
-    show_side_by_side(cv_grayscale_images, cv_edges_images)
+    # show_side_by_side(cv_grayscale_images, cv_edges_images)
+    cv_sum_images = []
+    for i in range(len(cv_edges_images)):
+        img1 = cv_edges_images[i]
+        img2 = cv_edges_images[len(cv_edges_images)-i-1]
+        sum_img = get_sum_of_images(img1, img2)
+        cv_sum_images.append(sum_img)
+    show_side_by_side(cv_edges_images, cv_sum_images)
 
     return cv_edges_images
 
