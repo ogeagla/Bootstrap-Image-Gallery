@@ -117,6 +117,24 @@ def run_all_pics(number_pics=5):
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
     # show_side_by_side(cv_grayscale_images, cv_edges_images)
+
+    cv_tramsf_images = []
+
+    M = np.float32([[1,0,100],[0,1,50]])
+    M2 = np.float32([[1,0,50],[0,1,150]])
+    for i in range(len(cv_edges_images)):
+        rows,cols = cv_edges_images[i].shape
+
+        if i % 2 == 0:
+            transform = M
+        else:
+            transform = M2
+
+        dst = cv2.warpAffine(cv_edges_images[i], transform, (cols*2, rows*2))
+        cv_tramsf_images.append(dst)
+
+    show_side_by_side(cv_edges_images, cv_tramsf_images)
+
     cv_sum_images = []
     for i in range(len(cv_edges_images)):
         img1 = cv_edges_images[i]
@@ -154,6 +172,8 @@ def run_one_pic(index=3):
     print 'generated ', len(cv_edges_images), ' CV edges images'
 
     show_side_by_side(cv_bilateral_filtered_images, cv_edges_images)
+
+
 
 
 def main():
