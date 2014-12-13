@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import glob
 from matplotlib import pyplot as plt
-
+import random
+from math import floor
 
 def get_image_files_from_dir(dir):
     files = glob.glob(dir+'/*')
@@ -94,6 +95,12 @@ def show_side_by_side(original_images, altered_images):
 
 def run_all_pics(number_pics=5):
 
+    size_x = 400
+    size_y = 300
+
+    collage_scale_x = 3.0
+    collage_scale_y = 3.0
+
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
     print 'found ', len(image_files), ' image files on FS'
 
@@ -101,7 +108,7 @@ def run_all_pics(number_pics=5):
     loaded_cv_images_count = len(cv_images)
     print 'loaded ', loaded_cv_images_count, ' images into CV'
     
-    cv_scaled_images = [get_cv_scaled_image(cv_image, 200, 100) for cv_image in cv_images]
+    cv_scaled_images = [get_cv_scaled_image(cv_image, size_x, size_y) for cv_image in cv_images]
     print 'generated ', len(cv_scaled_images), ' CV scaled images'
 
     cv_grayscale_images = [get_cv_grayscale_image(cv_image) for cv_image in cv_scaled_images]
@@ -118,30 +125,41 @@ def run_all_pics(number_pics=5):
 
     # show_side_by_side(cv_grayscale_images, cv_edges_images)
 
-    cv_tramsf_images = []
+    cv_transf_images = []
 
-    M = np.float32([[1,0,100],[0,1,50]])
-    M2 = np.float32([[1,0,50],[0,1,150]])
+    random.seed(127)
+
+    print 'generating transformations'
     for i in range(len(cv_edges_images)):
         rows,cols = cv_edges_images[i].shape
 
-        if i % 2 == 0:
-            transform = M
-        else:
-            transform = M2
+        M = np.float32([[1,0,collage_scale_x*float(size_x)*random.random()],[0,1,collage_scale_y*float(size_y)*random.random()]])
 
-        dst = cv2.warpAffine(cv_edges_images[i], transform, (cols*2, rows*2))
-        cv_tramsf_images.append(dst)
+        dst = cv2.warpAffine(cv_edges_images[i], M, (int(cols*collage_scale_x), int(rows*collage_scale_y)))
+        cv_transf_images.append(dst)
 
-    show_side_by_side(cv_edges_images, cv_tramsf_images)
+    # show_side_by_side(cv_edges_images, cv_transf_images)
 
+    print 'generating sums'
     cv_sum_images = []
-    for i in range(len(cv_edges_images)):
-        img1 = cv_edges_images[i]
-        img2 = cv_edges_images[len(cv_edges_images)-i-1]
+    for i in range(len(cv_transf_images)):
+        img1 = cv_transf_images[i]
+        img2 = cv_transf_images[len(cv_transf_images)-i-1]
         sum_img = get_sum_of_images(img1, img2)
         cv_sum_images.append(sum_img)
-    show_side_by_side(cv_edges_images, cv_sum_images)
+
+    cv_sampled_images = []
+    for i in range(len(cv_transf_images)):
+        ref_img = cv_transf_images[i]
+        for j in range(10):
+            rand_idx = int(floor(random.random()*float(len(cv_transf_images))))
+            ref_img = get_sum_of_images(ref_img, cv_transf_images[rand_idx])
+        cv_sampled_images.append(ref_img)
+
+    print 'displaying'
+
+    show_side_by_side(cv_transf_images, cv_sampled_images)
+    # show_side_by_side(cv_transf_images, cv_sum_images)
 
     return cv_edges_images
 
