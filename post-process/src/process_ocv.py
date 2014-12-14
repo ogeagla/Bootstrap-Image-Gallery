@@ -93,6 +93,13 @@ def show_side_by_side(original_images, altered_images):
         plt.draw()
     plt.show()
 
+def transform_resize(cv_image, x, y, sx, sy):
+    rows,cols = cv_image.shape
+    M = np.float32([[1,0,x],[0,1,y]])
+    ref_img = cv2.warpAffine(cv_image, M, (sx, sy))
+    return ref_img
+
+
 def run_all_pics(number_pics=5):
 
     size_x = 400
@@ -127,16 +134,10 @@ def run_all_pics(number_pics=5):
 
     cv_sampled_images = []
     for i in range(len(cv_edges_images)):
-        # obvi can and should reuse this logic: take one image, apply the trans, sum with trans on random imgs -> extract trans logic
-        rows,cols = cv_edges_images[i].shape
-        M = np.float32([[1,0,collage_scale_x*float(size_x)*random.random()],[0,1,collage_scale_y*float(size_y)*random.random()]])
-        ref_img = cv2.warpAffine(cv_edges_images[i], M, (int(cols*collage_scale_x), int(rows*collage_scale_y)))
-
-        for j in range(10):
-            rand_idx = int(floor(random.random()*float(len(cv_edges_images))))
-            rows,cols = cv_edges_images[i].shape
-            M = np.float32([[1,0,collage_scale_x*float(size_x)*random.random()],[0,1,collage_scale_y*float(size_y)*random.random()]])
-            rand_img = cv2.warpAffine(cv_edges_images[rand_idx], M, (int(cols*collage_scale_x), int(rows*collage_scale_y)))
+        ref_img = transform_resize(cv_edges_images[i], collage_scale_x*float(size_x)*random.random(), collage_scale_y*float(size_y)*random.random(),int(cols*collage_scale_x) ,  int(rows*collage_scale_y))
+        for j in range(len(cv_edges_images)):
+            # rand_idx = int(floor(random.random()*float(len(cv_edges_images))))
+            rand_img = transform_resize(cv_edges_images[j], collage_scale_x*float(size_x)*random.random(), collage_scale_y*float(size_y)*random.random(),int(cols*collage_scale_x) ,  int(rows*collage_scale_y))
             ref_img = get_sum_of_images(ref_img, rand_img)
         cv_sampled_images.append(ref_img)
 
