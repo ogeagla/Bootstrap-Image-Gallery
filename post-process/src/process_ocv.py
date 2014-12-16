@@ -42,11 +42,17 @@ def get_sum_of_images(img1, img2):
     sum_img = cv2.add(img1, img2)
     return sum_img
 
+def transform_resize(cv_image, x, y, sx, sy):
+    rows,cols = cv_image.shape
+    M = np.float32([[1,0,x],[0,1,y]])
+    ref_img = cv2.warpAffine(cv_image, M, (int(cols*sx), int(rows*sy)))
+    return ref_img
+
 def show_side_by_side(original_images, altered_images):
     assert len(original_images) == len(altered_images)
     number_of_subplots = len(original_images)
 
-    max_per_plot = 10
+    max_per_plot = 1
     original_images_split = []
     altered_images_split = []
     if number_of_subplots > max_per_plot:
@@ -93,20 +99,13 @@ def show_side_by_side(original_images, altered_images):
         plt.draw()
     plt.show()
 
-def transform_resize(cv_image, x, y, sx, sy):
-    rows,cols = cv_image.shape
-    M = np.float32([[1,0,x],[0,1,y]])
-    ref_img = cv2.warpAffine(cv_image, M, (sx, sy))
-    return ref_img
-
-
 def run_all_pics(number_pics=5):
 
-    size_x = 400
-    size_y = 300
+    size_x = 800
+    size_y = 600
 
-    collage_scale_x = 3.0
-    collage_scale_y = 3.0
+    collage_scale_x = 1
+    collage_scale_y = 1
 
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
     print 'found ', len(image_files), ' image files on FS'
@@ -132,18 +131,56 @@ def run_all_pics(number_pics=5):
 
     random.seed(127)
 
+    print 'processing imgs'
     cv_sampled_images = []
-    for i in range(len(cv_edges_images)):
-        ref_img = transform_resize(cv_edges_images[i], collage_scale_x*float(size_x)*random.random(), collage_scale_y*float(size_y)*random.random(),int(cols*collage_scale_x) ,  int(rows*collage_scale_y))
-        for j in range(len(cv_edges_images)):
-            # rand_idx = int(floor(random.random()*float(len(cv_edges_images))))
-            rand_img = transform_resize(cv_edges_images[j], collage_scale_x*float(size_x)*random.random(), collage_scale_y*float(size_y)*random.random(),int(cols*collage_scale_x) ,  int(rows*collage_scale_y))
+    for i in range(1):#len(cv_edges_images)):
+        #print 'running for ',i+1, ' of ',len(cv_edges_images)
+        pos_x = int(random.random()*float(collage_scale_x))*size_x
+        pos_y = int(random.random()*float(collage_scale_y))*size_y
+        ref_img = transform_resize(cv_edges_images[i], pos_x, pos_y, collage_scale_x, collage_scale_y)
+        for j in range(4*collage_scale_x*collage_scale_y):#len(cv_edges_images)):
+            rand_idx = int(floor(random.random()*float(len(cv_edges_images))))
+            pos_x = int(random.random()*float(collage_scale_x))*size_x
+            pos_y = int(random.random()*float(collage_scale_y))*size_y
+
+            rand_img = transform_resize(cv_edges_images[rand_idx], pos_x, pos_y, collage_scale_x, collage_scale_y)
+            print 'shapes: ', cv_edges_images[rand_idx].shape, rand_img.shape
             ref_img = get_sum_of_images(ref_img, rand_img)
         cv_sampled_images.append(ref_img)
 
+    gauss_blurred = [cv2.GaussianBlur(cv_img, (25,25), 0) for cv_img in cv_sampled_images]
+    rgbs = [cv2.cvtColor(gray,cv2.COLOR_GRAY2RGB) for gray in gauss_blurred]
+    new_rgbs = []
+    for i in range(len(rgbs)):
+        img = rgbs[i]
+        print img.shape
+        for x in range(img.shape[0]):
+            for y in range(img.shape[1]):
+                px = img[x,y]
+                var_B = int(15.0*(random.random()-0.5))
+                var_G = int(25.0*(random.random()-0.5))
+                var_R = int(5.0*(random.random()-0.5))
+
+                # print var_B
+                # exit(0)
+                img.itemset((x,y,0),(px[0] + var_B) % 256)
+                img.itemset((x,y,1),(px[1] + var_G) % 256)
+                img.itemset((x,y,2),(px[2] + var_R) % 256)
+        new_rgbs.append(img)
+
+
     print 'displaying'
 
-    show_side_by_side(cv_edges_images, cv_sampled_images)
+    # show_side_by_side(cv_edges_images, cv_sampled_images)
+
+
+    # tmp = [get_cv_bilateral_filtered_image(cv_img) for cv_img in cv_sampled_images]
+    # show_side_by_side(cv_sampled_images, tmp)
+
+    show_side_by_side(rgbs, new_rgbs)
+
+    # show_side_by_side(cv_sampled_images, [get_sum_of_images(cv_sampled_images[i], tmp[i]) for i in range(len(cv_sampled_images))])
+
 
 
     return cv_edges_images
@@ -181,7 +218,7 @@ def run_one_pic(index=3):
 
 def main():
 
-    run_all_pics(20)
+    run_all_pics(10)
 
     
 if __name__ == "__main__":
