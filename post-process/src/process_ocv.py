@@ -104,7 +104,7 @@ def run_all_pics(number_pics=5):
     size_x = 800
     size_y = 600
 
-    collage_scale_x = 1
+    collage_scale_x = 2
     collage_scale_y = 1
 
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
@@ -157,9 +157,9 @@ def run_all_pics(number_pics=5):
         for x in range(img.shape[0]):
             for y in range(img.shape[1]):
                 px = img[x,y]
-                var_B = int(15.0*(random.random()-0.5))
-                var_G = int(25.0*(random.random()-0.5))
-                var_R = int(5.0*(random.random()-0.5))
+                var_B = int(25.0*(random.random()-0.5))
+                var_G = int(55.0*(random.random()-0.5))
+                var_R = int(95.0*(random.random()-0.5))
 
                 # print var_B
                 # exit(0)
