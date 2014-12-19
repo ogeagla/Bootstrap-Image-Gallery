@@ -104,7 +104,7 @@ def run_all_pics(number_pics=5):
     size_x = 800
     size_y = 600
 
-    collage_scale_x = 2
+    collage_scale_x = 1
     collage_scale_y = 1
 
     image_files = get_image_files_from_dir('/home/octavian/github/Bootstrap-Image-Gallery/post-process/imgs-input')
@@ -163,9 +163,21 @@ def run_all_pics(number_pics=5):
 
                 # print var_B
                 # exit(0)
-                img.itemset((x,y,0),(px[0] + var_B) % 256)
-                img.itemset((x,y,1),(px[1] + var_G) % 256)
-                img.itemset((x,y,2),(px[2] + var_R) % 256)
+                new_B = (px[0] + var_B)
+                new_G = (px[1] + var_G)
+                new_R = (px[2] + var_R)
+
+                if new_B < 0 or new_B > 255:
+                    new_B = px[0] - var_B
+                if new_G < 0 or new_G > 255:
+                    new_G = px[0] - var_G
+                if new_R < 0 or new_R > 255:
+                    new_R = px[0] - var_R
+
+
+                img.itemset((x,y,0), new_B)
+                img.itemset((x,y,1), new_G)
+                img.itemset((x,y,2), new_R)
         new_rgbs.append(img)
 
 
@@ -177,7 +189,7 @@ def run_all_pics(number_pics=5):
     # tmp = [get_cv_bilateral_filtered_image(cv_img) for cv_img in cv_sampled_images]
     # show_side_by_side(cv_sampled_images, tmp)
 
-    show_side_by_side(rgbs, new_rgbs)
+    show_side_by_side(cv_sampled_images, new_rgbs)
 
     # show_side_by_side(cv_sampled_images, [get_sum_of_images(cv_sampled_images[i], tmp[i]) for i in range(len(cv_sampled_images))])
 
@@ -218,7 +230,7 @@ def run_one_pic(index=3):
 
 def main():
 
-    run_all_pics(10)
+    run_all_pics(4)
 
     
 if __name__ == "__main__":
