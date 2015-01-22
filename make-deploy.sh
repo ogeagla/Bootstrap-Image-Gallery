@@ -14,4 +14,4 @@ if [ ! -d "$DEPLOY_DIR" ]; then
     cp ./index.html $DEPLOY_DIR
 fi
 
-scp -r -P 2222 $DEPLOY_DIR ogeagla@octaviangeagla.com:/home4/ogeagla/public_html/bap
+scp -r -P 2222 $DEPLOY_DIR ogeagla@192.254.233.231:/home4/ogeagla/public_html/bap
