@@ -151,7 +151,7 @@ do
         echo "{
           \"url_wt\":\"${THUMBS_FOLDER}/${filename}_thumb.${extension}\",
           \"url_w\":\"${WATERMARKED_FOLDER}/${filename}.${extension}\",
-          \"title\":\"title\"
+          \"title\":\"\"
 }," >> images.json
         
         #fi
