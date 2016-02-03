@@ -5,7 +5,7 @@ DEPLOY_DIR=./bap
 if [ ! -d "$DEPLOY_DIR" ]; then
     mkdir "$DEPLOY_DIR"
 
-    cp -r ./{js,css} $DEPLOY_DIR
+    cp -r ./{js,css,fonts} $DEPLOY_DIR
 
     mkdir $DEPLOY_DIR/img
 
